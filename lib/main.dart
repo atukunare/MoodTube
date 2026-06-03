@@ -2088,7 +2088,10 @@ class VideoResultCard extends StatelessWidget {
                 const SizedBox(width: 10),
                 Expanded(
                   child: FilledButton.icon(
-                    onPressed: () => context.read<MoodTubeState>().setCurrentPlaying(item),
+                    onPressed: () {
+                      context.read<MoodTubeState>().setCurrentPlaying(item);
+                      Navigator.of(context).push(MaterialPageRoute(builder: (_) => PlayerScreen(item: item)));
+                    },
                     icon: const Icon(Icons.play_arrow),
                     label: Text(text.play),
                   ),
@@ -2117,6 +2120,9 @@ class _PlayerScreenState extends State<PlayerScreen> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) context.read<MoodTubeState>().setCurrentPlaying(widget.item);
+    });
     controller = YoutubePlayerController(
       initialVideoId: widget.item.videoId,
       flags: const YoutubePlayerFlags(
