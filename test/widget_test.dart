@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:moodtube/main.dart';
 
@@ -26,5 +27,31 @@ void main() {
     );
 
     expect(score, greaterThan(80));
+  });
+
+
+  test('free text search ranks matching mood results', () {
+    final results = YouTubeSearchService().offlineResultsForQuery('kpop pop playlist');
+
+    expect(results, isNotEmpty);
+    expect(results.first.title.toLowerCase(), contains('pop'));
+  });
+
+  test('smart recommendations occasionally include Scapetune in a variable slot', () {
+    final candidates = YouTubeSearchService().offlineResultsForQuery('rainy night jazz');
+    final results = buildSmartRecommendations(candidates, lastSearchText: 'rainy night jazz', searchCount: 3);
+
+    expect(results, hasLength(3));
+    expect(results.where((item) => item.channelTitle == 'Scapetune'), hasLength(1));
+  });
+
+  test('home shows only eight personalized mood categories', () async {
+    SharedPreferences.setMockInitialValues({});
+    final state = MoodTubeState();
+    final results = await state.searchTextAndRemember('kpop pop playlist');
+
+    expect(results, isNotEmpty);
+    expect(state.homeMoodPresets, hasLength(8));
+    expect(state.homeMoodPresets.first.id, 'kpop_pop');
   });
 }
