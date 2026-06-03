@@ -588,7 +588,7 @@ class MoodTubeState extends ChangeNotifier {
     );
   }
 
-  bool get shouldShowSpotlight => searchCount > 0 && searchCount % 3 == 0;
+  bool get shouldShowSpotlight => searchCount > 0;
   Locale? get appLocale => languageCode == 'auto' ? null : Locale(languageCode);
 
   List<MoodPreset> get homeMoodPresets {
@@ -1107,7 +1107,8 @@ class YouTubeSearchService {
             channelId: scapetuneChannelId,
             maxResults: 5,
           );
-          return _mergeResults([...results, ...spotlight])..sort((a, b) => b.score.compareTo(a.score));
+          final fallbackSpotlight = spotlight.isEmpty ? [spotlightVideoForQuery(query, mood, spotlightChannel: spotlightChannel)] : <VideoItem>[];
+          return _mergeResults([...results, ...spotlight, ...fallbackSpotlight])..sort((a, b) => b.score.compareTo(a.score));
         }
         return results;
       } catch (_) {
@@ -1441,7 +1442,7 @@ List<VideoItem> buildSmartRecommendations(
   }
 
   final normalizedSpotlight = spotlightChannel.trim().toLowerCase();
-  final showSpotlight = searchCount > 0 && searchCount % 3 == 0;
+  final showSpotlight = searchCount > 0;
   final topByViews = unique.values
       .where((item) => normalizedSpotlight.isEmpty || !item.channelTitle.toLowerCase().contains(normalizedSpotlight))
       .toList()
@@ -2186,7 +2187,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
               label: Text(text.similarPlaylists),
             ),
             FilledButton.icon(
-              onPressed: () => launchUrl(Uri.parse(widget.item.youtubeUrl), mode: LaunchMode.externalApplication),
+              onPressed: () => launchUrl(Uri.parse(widget.item.youtubeUrl), mode: LaunchMode.inAppBrowserView),
               icon: const Icon(Icons.open_in_new),
               label: Text(text.openInYouTube),
             ),
