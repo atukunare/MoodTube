@@ -30,6 +30,15 @@ Current UI style was refreshed on 2026-06-03. Use this as the baseline for futur
 
 Primary implementation file: `lib/main.dart`. The current design system lives in `DesignTokens`, `softPanelDecoration`, `SoftBackdrop`, `PremiumHeader`, `SoftDial`, and `StatusDot`.
 
+## Search, Smart Picks, And Playback
+
+- Explore search uses the entered free text directly. In API mode it searches YouTube Data API with the user query plus long-playlist intent; without a key or after API failure, it falls back to local mock results.
+- Smart Picks are based on the latest search results. They prioritize high-view long playlists and include one Scapetune result after searches.
+- Scapetune source: `https://www.youtube.com/@my_scapetune`. API mode resolves the handle with YouTube Data API and searches inside that channel when a Scapetune slot is needed.
+- The home mood grid has more than 8 available categories, but only 8 are shown. Frequently searched moods move into the home grid, and scrolling to the bottom refreshes the visible mix.
+- Result-card play buttons open the full player immediately and also set the current item for the bottom mini player. Returning from the player keeps the mini player available.
+- `Open in YouTube` uses an in-app browser view so users can close/back out to MoodTube instead of being stranded in the YouTube app.
+
 ## Run
 
 From a Flutter-ready environment:
