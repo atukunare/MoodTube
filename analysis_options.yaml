@@ -2,5 +2,33 @@ include: package:flutter_lints/flutter.yaml
 
 linter:
   rules:
+    # Prefer const constructors where possible
     prefer_const_constructors: true
+    prefer_const_declarations: true
+    prefer_const_literals_to_create_immutables: true
+    # Avoid unnecessary operations
+    avoid_print: false
+    avoid_redundant_argument_values: true
+    avoid_unnecessary_containers: true
+    avoid_web_libraries_in_flutter: true
+    # Code style
     sort_child_properties_last: false
+    prefer_final_locals: true
+    prefer_final_in_for_each: true
+    unnecessary_string_interpolations: true
+    # Error prevention
+    always_declare_return_types: true
+    prefer_void_to_null: true
+    # Widget conventions
+    use_key_in_widget_constructors: true
+    prefer_const_constructors_in_immutables: true
+    # Null safety
+    avoid_init_to_null: true
+
+analyzer:
+  errors:
+    missing_return: error
+    dead_code: warning
+  exclude:
+    - "**.g.dart"
+    - "**.freezed.dart"

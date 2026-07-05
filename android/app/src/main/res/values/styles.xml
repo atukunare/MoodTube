@@ -1,7 +1,13 @@
 <resources>
-    <style name="LaunchTheme" parent="@android:style/Theme.Light.NoTitleBar">
-        <item name="android:windowBackground">@android:color/white</item>
+    <!-- Launch theme used while the activity starts up (before Flutter renders). -->
+    <style name="LaunchTheme" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/splash_background</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_launcher</item>
+        <item name="postSplashScreenTheme">@style/NormalTheme</item>
+        <!-- Fallback for pre-Android-12 devices -->
+        <item name="android:windowBackground">@drawable/launch_background</item>
     </style>
+    <!-- Theme used once Flutter has rendered its first frame. -->
     <style name="NormalTheme" parent="@android:style/Theme.Material.Light.NoActionBar">
         <item name="android:windowBackground">@android:color/white</item>
     </style>

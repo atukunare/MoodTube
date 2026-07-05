@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MoodTube 미리보기</title>
+  <style>
+    :root { --w: 390px; --h: 844px; }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; margin: 0; }
+    body {
+      font-family: -apple-system, "Apple SD Gothic Neo", "Pretendard", sans-serif;
+      background: linear-gradient(160deg, #efeafc 0%, #f4f0ff 40%, #fdeef6 72%, #eef2ff 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 18px;
+      padding: 28px 16px 40px;
+      color: #2b2740;
+    }
+    header { text-align: center; }
+    header h1 {
+      margin: 0 0 4px;
+      font-size: 20px;
+      font-weight: 800;
+      letter-spacing: -0.2px;
+    }
+    header p { margin: 0; font-size: 13px; color: #6b6685; font-weight: 600; }
+    .toolbar {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .toolbar button {
+      border: 1px solid rgba(255,255,255,0.9);
+      background: rgba(255,255,255,0.7);
+      color: #5b4ea8;
+      font-weight: 800;
+      font-size: 12.5px;
+      padding: 8px 14px;
+      border-radius: 999px;
+      cursor: pointer;
+      box-shadow: 0 6px 16px rgba(80,60,150,0.12);
+      transition: transform .08s ease, background .15s ease;
+    }
+    .toolbar button:hover { transform: translateY(-1px); background: rgba(255,255,255,0.95); }
+    .toolbar button.active { background: #9b7cff; color: #fff; border-color: #9b7cff; }
+
+    .phone {
+      position: relative;
+      width: var(--w);
+      height: var(--h);
+      max-width: 96vw;
+      border-radius: 44px;
+      padding: 12px;
+      background: linear-gradient(160deg, #2a2740, #444056);
+      box-shadow:
+        0 30px 70px rgba(60,45,120,0.35),
+        inset 0 1px 2px rgba(255,255,255,0.25);
+    }
+    .phone::before {
+      /* notch */
+      content: "";
+      position: absolute;
+      top: 12px; left: 50%;
+      transform: translateX(-50%);
+      width: 150px; height: 26px;
+      background: #2a2740;
+      border-bottom-left-radius: 16px;
+      border-bottom-right-radius: 16px;
+      z-index: 2;
+    }
+    .screen {
+      width: 100%;
+      height: 100%;
+      border-radius: 34px;
+      overflow: hidden;
+      background: #f2eefb;
+    }
+    iframe { width: 100%; height: 100%; border: 0; display: block; }
+
+    /* full width mode */
+    body.full .phone {
+      width: 100%; height: calc(100vh - 150px);
+      border-radius: 18px; padding: 0; background: none; box-shadow: none;
+    }
+    body.full .phone::before { display: none; }
+    body.full .screen { border-radius: 18px; box-shadow: 0 12px 40px rgba(60,45,120,0.18); }
+
+    footer { font-size: 12px; color: #8a85a3; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🎧 MoodTube 미리보기</h1>
+    <p>레퍼런스 파스텔 오로라 디자인 — 브라우저에서 바로 확인</p>
+  </header>
+  <div class="toolbar">
+    <button data-w="390" data-h="844" class="active">📱 모바일 (390×844)</button>
+    <button data-w="360" data-h="780">소형 (360×780)</button>
+    <button data-full>🖥️ 전체 폭</button>
+    <button data-reload>↻ 새로고침</button>
+  </div>
+  <div class="phone" id="phone">
+    <div class="screen">
+      <iframe id="app" src="./index.html" title="MoodTube"></iframe>
+    </div>
+  </div>
+  <footer>코드 변경 후에는 <code>./preview.sh</code> 를 다시 실행해 빌드를 갱신하세요.</footer>
+
+  <script>
+    const root = document.documentElement;
+    const body = document.body;
+    const app = document.getElementById('app');
+    const buttons = document.querySelectorAll('.toolbar button');
+    buttons.forEach(btn => btn.addEventListener('click', () => {
+      if (btn.dataset.reload !== undefined) {
+        app.src = app.src; return;
+      }
+      if (btn.dataset.full !== undefined) {
+        body.classList.add('full');
+        buttons.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        return;
+      }
+      body.classList.remove('full');
+      root.style.setProperty('--w', btn.dataset.w + 'px');
+      root.style.setProperty('--h', btn.dataset.h + 'px');
+      buttons.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    }));
+  </script>
+</body>
+</html>
