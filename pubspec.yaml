@@ -2,6 +2,7 @@ name: moodtube
 description: "MoodTube - Find long YouTube music playlists by mood"
 publish_to: "none"
 version: 0.3.3+5
+license: MIT
 
 environment:
   sdk: ">=3.4.0 <4.0.0"
