@@ -11,6 +11,9 @@ android/app/release
 *.iml
 .idea/
 
+# Local build secrets — never commit
+dart_defines.json
+
 # Release signing secrets — never commit
 android/key.properties
 **/*.jks

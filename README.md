@@ -2,16 +2,16 @@
 
 ## Agent Entry
 
-이 프로젝트의 루트 정본 문서는 `README.md`와 `CHANGELOG.md`입니다.
+이 저장소의 정본 문서는 `README.md`와 `CHANGELOG.md`입니다.
 
-- 전역 작업 규칙: `/Users/mac/wiki/AGENTS.md`
-- 프로젝트 상세 지식: `/Users/mac/wiki/projects/moodtube.md`
 - 변경 이력/로드맵: `CHANGELOG.md`
-- 작업 범위: 기본적으로 이 프로젝트 폴더 안에서만 검색·수정합니다. 다른 프로젝트나 wiki는 필요한 정확한 경로만 엽니다.
+- 개인정보처리방침: `docs/PRIVACY.md`
+- AdMob 연동: `docs/ADS_GUIDE.md`
+- 작업 범위: 기본적으로 이 프로젝트 폴더 안에서만 검색·수정합니다.
 
 MoodTube는 기분(mood)별로 YouTube의 긴 음악 플레이리스트를 찾아주는 Flutter Android 앱(MVP)입니다.
 
-**상태:** Google Play 스토어 첫 배포 완료 (0.1.2+2 버전, 2026-06-21. 이후 2026-06-28 내부 카탈로그 다양화 및 안정성 최적화(W5 API 재시도, W9 Selector 도입, W12 미니플레이어 누수 해결) 완료). 기능 및 성능 최적화(유튜브 재생 오류 자동차단 블랙리스트, 다이얼 드래그 성능 개선, 다이얼 정렬, 뒤로가기 재생 유지)가 모두 반영된 상태입니다. 전체 런칭 로드맵(완료/남은 일)과 재개 가이드는 위키에 있습니다: `~/wiki/projects/moodtube.md`.
+**상태:** Google Play 스토어 첫 배포 완료 (0.1.2+2, 2026-06-21). 이후 0.3.3까지 내부 카탈로그 다양화, 안정성 최적화, AdMob 연동이 반영된 상태입니다. 상세 변경 이력은 `CHANGELOG.md`를 참고하세요.
 
 ## 핵심 방향
 
@@ -45,8 +45,8 @@ MoodTube는 기분(mood)별로 YouTube의 긴 음악 플레이리스트를 찾�
 ## 릴리즈 & 서명 (Play 출시 준비)
 
 - `applicationId` / `namespace` = `com.moodtube.app` (기존 placeholder `com.example.moodtube`에서 변경). `MainActivity.kt`는 `com/moodtube/app/`로 이동.
-- 릴리즈 서명은 `android/key.properties`(gitignore) → `android/app/upload-keystore.jks`(gitignore)를 읽습니다. `key.properties`가 없으면 debug 서명으로 폴백하여 개발 빌드는 그대로 됩니다.
-- **키스토어는 로컬 전용이며 커밋되지 않습니다.** 서명 비밀번호와 별칭 정보는 로컬 `android/key.properties`에 안전하게 설정되어 있으며, 이 두 파일(keystore, properties)은 프로젝트 외부의 안전한 백업 매체에 보관해야 합니다. — 분실하면 앱 업데이트가 영구 불가합니다.
+- 릴리즈 서명은 `android/key.properties`(gitignore) → `android/app/upload-keystore.jks`(gitignore)를 읽습니다. `key.properties`가 없으면 debug 서명으로 폴백하여 개발 빌드는 그대로 됩니다. 템플릿은 `android/key.properties.example`을 참고하세요.
+- **키스토어는 로컬 전용이며 커밋되지 않습니다.** `key.properties`와 keystore 파일은 로컬에만 두고, 프로젝트 외부의 안전한 백업 매체에도 보관하세요. 분실하면 앱 업데이트가 영구 불가합니다.
 - R8/코드 축소 및 난독화가 활성화되어 있습니다. (`minifyEnabled true`, `shrinkResources true`, `proguard-rules.pro` 규칙 연동)
 - AAB 검증을 위해 네이티브 심볼을 포함합니다. (`debugSymbolLevel = "SYMBOL_TABLE"`) 이 때문에 업로드용 AAB 용량은 늘지만, Play가 기기별로 최적화해 배포하므로 사용자 설치 용량과는 별개입니다.
 - 2026-06-13 검증 기준 `flutter build apk --release` 성공(약 56.4MB) 및 `flutter build appbundle --release` 성공(약 57.7MB). AAB 내부에 `libflutter.so.sym` / `libapp.so.sym` 포함 확인.
@@ -108,6 +108,21 @@ flutter pub get
 flutter run
 ```
 
+## 릴리즈 빌드
+
+로컬 시크릿 파일을 준비한 뒤 빌드합니다:
+
+```bash
+cp dart_defines.json.example dart_defines.json
+# dart_defines.json에 YouTube Data API 키 입력 (Android 패키지 + SHA-1로 제한 권장)
+cp android/key.properties.example android/key.properties
+# key.properties와 upload-keystore.jks 설정
+
+flutter build appbundle --release --dart-define-from-file=dart_defines.json
+```
+
+API 키 없이도 앱은 `mockCatalog`로 동작합니다.
+
 ## 빠른 웹 미리보기 (브라우저)
 
 기기/에뮬레이터 없이 브라우저에서 폰 프레임으로 미리보기:
@@ -127,15 +142,17 @@ cd MoodTube
 
 ## 추천 로직 / YouTube API 사용
 
-- **YouTube Data API 우선**: 앱은 기본적으로 YouTube API를 통해 실시간 검색합니다(`apiMode` 기본 true). 만약 API 할당량이 초과되거나 오프라인 상태인 경우 `mockCatalog`로 자동 폴백하여 추천합니다. 검색어/무드는 `offlineResultsForQuery`가 점수화해 매칭합니다.
+- **YouTube Data API**: 빌드 시 `--dart-define-from-file=dart_defines.json`으로 키를 주입합니다. 키가 없거나 할당량 초과·오프라인이면 `mockCatalog`로 폴백합니다.
 - **에너지 무드 매핑**: 다이얼의 감정 무드(`mood_*`)는 `atmosphereToActivities`로 활동 무드 카탈로그에 매핑되어 내부 데이터로 추천됩니다.
 - **YouTube Data API는 제한적**: API는 `apiMode`가 켜져 있고 키가 있을 때만, 그리고 `kDailyApiSearchLimit`(기기당 일일 상한, 기본 12회) 안에서만 호출됩니다. 그 외에는 항상 내부 카탈로그를 사용해 공유 할당량을 보호합니다.
-- API 모드/키는 **개발자용**이라 설정 UI에서 제외했습니다(코드 경로/상수만 유지). 출시 시에는 내부 데이터만으로 동작합니다.
+- API 키는 소스에 포함하지 않습니다. `dart_defines.json.example`을 복사해 로컬 `dart_defines.json`에 설정하세요.
 - 안드로이드 인터넷 권한은 `android/app/src/main/AndroidManifest.xml`에 포함되어 있습니다.
 
 ## 광고(수익화)
 
 - **연동 상태**: `google_mobile_ads` 적용. AdMob 앱 ID는 매니페스트에 등록(`ca-app-pub-9993388177095923~4694181215`). 홈 "스마트 픽" 3번째 카드 뒤에 광고 슬롯(`ads.smartPickAd()`) 삽입.
+- **연동 및 승인 완료 (2026-07-05)**: 구글 플레이 스토어 배포 후 AdMob 콘솔에서 `com.moodtube.app` 앱 연동을 성공적으로 마쳤습니다. 앱 인증(`확인됨`) 및 승인 상태(`준비됨`)가 완료되어 실광고 노출이 활성화되었습니다.
+- **설정 보완 완료**: `app-ads.txt` 크롤링 수집 확인, 업로드 키스토어 백업, 그리고 Google Cloud Console의 YouTube API 키 제한사항에 Google Play 앱 서명 키의 SHA-1 지문 등록 조치가 완비되었습니다.
 - **웹 안전**: `lib/ads/`는 조건부 임포트(`ads.dart` → 모바일 `ads_real.dart` / 웹 `ads_stub.dart`)라 웹 빌드/미리보기에는 광고 SDK가 들어가지 않습니다.
 - 모바일 릴리즈는 실제 광고 단위 ID를 사용합니다(`ads_real.dart`, release/debug 분기). 에뮬레이터/미승인 상태에서는 광고 로드 실패가 로그에 보일 수 있으나 앱 시작을 막지 않도록 초기화 실패를 흡수합니다.
 - ⚠️ **Play 제출 전 Data Safety에 'AdMob 사용(광고 식별자 등)'을 반영**해야 합니다. 개인정보처리방침은 AdMob/AD_ID 반영 및 호스팅 완료.

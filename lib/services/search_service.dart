@@ -29,11 +29,10 @@ Future<void> _requireNetwork() async {
   }
 }
 
-// Bundled YouTube Data API key. Safe to ship because the key is restricted in
-// Google Cloud Console to this app (Android package
-// com.moodtube.app + release/debug signing SHA-1 fingerprints).
-// Verified 2026-06-28: All restrictions applied successfully (including Play App Signing SHA-1).
-const kBundledYouTubeApiKey = '';
+// Injected at build time via --dart-define=YOUTUBE_API_KEY=... or
+// --dart-define-from-file=dart_defines.json (see dart_defines.json.example).
+// Empty in the public source tree; without a key the app uses mockCatalog only.
+const kBundledYouTubeApiKey = String.fromEnvironment('YOUTUBE_API_KEY');
 
 class YouTubeSearchService {
   Future<List<VideoItem>> searchMood({
