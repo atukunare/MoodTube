@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import 'package:moodtube/ads/ads.dart' as ads;
 import 'package:moodtube/l10n/app_text.dart';
 import 'package:moodtube/models/mood_preset.dart';
 import 'package:moodtube/models/video_item.dart';
@@ -76,24 +77,30 @@ class _ResultsScreenState extends State<ResultsScreen> {
               return const Center(child: CircularProgressIndicator());
             }
             final results = snapshot.data!;
+            final children = <Widget>[
+              Text(text.moodDescription(widget.mood.id),
+                  style: TextStyle(
+                      fontSize: 17,
+                      height: 1.35,
+                      fontWeight: FontWeight.w800,
+                      color: DesignTokens.ink)),
+              if (widget.sourceText != null &&
+                  widget.sourceText!.isNotEmpty) ...[
+                const SizedBox(height: 6),
+                Text('${text.sourceMoodPrefix}: ${widget.sourceText}',
+                    style: TextStyle(color: DesignTokens.sage)),
+              ],
+              const SizedBox(height: 20),
+            ];
+            for (var i = 0; i < results.length; i++) {
+              children.add(
+                  VideoResultCard(item: results[i], queue: results));
+              // Native ad after the 4th result (index 3) — natural mid-list slot.
+              if (i == 3) children.add(ads.resultsListAd());
+            }
             return ListView(
               padding: const EdgeInsets.fromLTRB(16, 10, 16, 34),
-              children: [
-                Text(text.moodDescription(widget.mood.id),
-                    style: TextStyle(
-                        fontSize: 17,
-                        height: 1.35,
-                        fontWeight: FontWeight.w800,
-                        color: DesignTokens.ink)),
-                if (widget.sourceText != null &&
-                    widget.sourceText!.isNotEmpty) ...[
-                  const SizedBox(height: 6),
-                  Text('${text.sourceMoodPrefix}: ${widget.sourceText}',
-                      style: TextStyle(color: DesignTokens.sage)),
-                ],
-                const SizedBox(height: 20),
-                ...results.map((item) => VideoResultCard(item: item)),
-              ],
+              children: children,
             );
           },
         ),
@@ -135,9 +142,10 @@ class ThumbnailFallback extends StatelessWidget {
 }
 
 class VideoResultCard extends StatelessWidget {
-  const VideoResultCard({super.key, required this.item});
+  const VideoResultCard({super.key, required this.item, this.queue});
 
   final VideoItem item;
+  final List<VideoItem>? queue;
 
   @override
   Widget build(BuildContext context) {
@@ -203,9 +211,13 @@ class VideoResultCard extends StatelessWidget {
                 Expanded(
                   child: FilledButton.icon(
                     onPressed: () {
-                      context.read<MoodTubeState>().setCurrentPlaying(item);
+                      final playQueue = queue ?? [item];
+                      context
+                          .read<MoodTubeState>()
+                          .startPlayback(item, queue: playQueue);
                       Navigator.of(context).push(MaterialPageRoute(
-                          builder: (_) => PlayerScreen(item: item)));
+                          builder: (_) =>
+                              PlayerScreen(item: item, queue: playQueue)));
                     },
                     icon: const Icon(Icons.play_arrow),
                     label: Text(text.play),

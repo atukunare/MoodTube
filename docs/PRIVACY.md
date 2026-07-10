@@ -1,6 +1,6 @@
 # MoodTube Privacy Policy / 개인정보처리방침 / 隐私政策
 
-_Last updated: 2026-06-07_
+_Last updated: 2026-07-10_
 
 MoodTube is a mood-based music discovery app that helps you find long music
 playlists on YouTube. This policy explains what data the app handles.
@@ -27,8 +27,9 @@ and not sent to us:
 
 **Advertising (Google AdMob).** MoodTube shows ads using **Google AdMob**. To
 serve and measure ads, Google may collect and process device information and
-identifiers, including the **advertising ID (AD_ID)**, and usage data. This is
-governed by Google's policies:
+identifiers, including the **advertising ID (AD_ID)**, and usage data. In regions
+where required (e.g. EEA), MoodTube requests consent via Google's **User Messaging
+Platform (UMP)** before personalized ads. This is governed by Google's policies:
 - How Google uses data: <https://policies.google.com/technologies/partner-sites>
 - Google Privacy Policy: <https://policies.google.com/privacy>
 
@@ -59,7 +60,8 @@ cache YouTube audio or video. Thumbnail images load from YouTube's servers.
 
 **광고(Google AdMob).** MoodTube는 **Google AdMob**으로 광고를 표시합니다. 광고 게재·측정을
 위해 Google이 기기 정보 및 식별자(**광고 ID, AD_ID**)와 사용 데이터를 수집·처리할 수 있으며,
-이는 Google 정책을 따릅니다.
+EEA 등 동의가 필요한 지역에서는 **UMP(User Messaging Platform)** 동의 폼을 표시한 뒤
+개인화 광고를 게재합니다. 이는 Google 정책을 따릅니다.
 - Google의 데이터 사용: <https://policies.google.com/technologies/partner-sites>
 - Google 개인정보처리방침: <https://policies.google.com/privacy>
 
@@ -87,7 +89,8 @@ YouTube 오디오/영상을 다운로드·추출·캐시하지 않습니다. 썸
 - 你保存的播放列表（仅 YouTube 视频引用：标题/ID/元数据）
 
 **广告（Google AdMob）。** MoodTube 使用 **Google AdMob** 展示广告。为投放和衡量广告，Google
-可能会收集并处理设备信息与标识符（包括**广告 ID，AD_ID**）以及使用数据，遵循 Google 的政策：
+可能会收集并处理设备信息与标识符（包括**广告 ID，AD_ID**）以及使用数据。在需要同意的地区
+（如 EEA），会通过 Google 的 **UMP（User Messaging Platform）** 征求同意。遵循 Google 的政策：
 - Google 如何使用数据：<https://policies.google.com/technologies/partner-sites>
 - Google 隐私政策：<https://policies.google.com/privacy>
 

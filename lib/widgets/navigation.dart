@@ -38,7 +38,11 @@ class _ShellScreenState extends State<ShellScreen> {
     ];
     final playerState = context.watch<MoodTubeState>();
     final playing = playerState.currentPlaying;
-    _syncMiniController(playing);
+    // Full-screen PlayerScreen owns the YouTube controller — do not create a
+    // second mini-player controller while it is open (dual-audio risk).
+    final showMini =
+        playing != null && !playerState.fullPlayerActive;
+    _syncMiniController(showMini ? playing : null);
     return Scaffold(
       backgroundColor: DesignTokens.background,
       body: SafeArea(
@@ -56,7 +60,7 @@ class _ShellScreenState extends State<ShellScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            if (playing != null && miniController != null)
+            if (showMini && miniController != null)
               MiniPlayer(
                   item: playing,
                   controller: miniController!,
@@ -294,10 +298,17 @@ class _MiniPlayerState extends State<MiniPlayer> {
       tubeState.blacklistVideo(videoId);
 
       if (!mounted) return;
-      final errMsg = AppText.of(context).playErrorRestricted;
+      final next = tubeState.advanceToNextInQueue();
+      if (next != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(AppText.of(context).playErrorGeneric)),
+        );
+        // Shell will rebuild mini controller for the new currentPlaying.
+        return;
+      }
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(errMsg)),
+        SnackBar(content: Text(AppText.of(context).playErrorRestricted)),
       );
       tubeState.clearCurrentPlaying();
     }

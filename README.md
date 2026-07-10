@@ -87,7 +87,7 @@ marketing/           Screenshots & store graphics
 
 ## Status
 
-Google Play release **v0.3.3+5** (2026-07). AdMob integrated. See [CHANGELOG.md](CHANGELOG.md) for details.
+Google Play release **v0.3.4+6** (2026-07). AdMob + UMP consent. See [CHANGELOG.md](CHANGELOG.md) for details.
 
 Privacy policy: [legitstudio.cc/moodtube/privacy](https://legitstudio.cc/moodtube/privacy)
 

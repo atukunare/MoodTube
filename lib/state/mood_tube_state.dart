@@ -18,6 +18,11 @@ class MoodTubeState extends ChangeNotifier {
   List<String> get recentSearches => List.unmodifiable(_recentSearches);
   List<VideoItem> _lastSearchResults = [];
   VideoItem? currentPlaying;
+  /// When true, [PlayerScreen] owns the YouTube controller — Shell must not
+  /// create a mini-player controller (avoids dual-audio overlap).
+  bool fullPlayerActive = false;
+  List<VideoItem> _playQueue = [];
+  int _playQueueIndex = 0;
   int homeRefreshSeed = 0;
   bool apiMode =
       true; // use the YouTube API (gated by daily cap), else internal
@@ -37,6 +42,8 @@ class MoodTubeState extends ChangeNotifier {
   final Set<String> _blacklistedVideoIds = {};
 
   List<VideoItem> get saved => List.unmodifiable(_saved);
+  List<VideoItem> get playQueue => List.unmodifiable(_playQueue);
+  int get playQueueIndex => _playQueueIndex;
   int get miniPlayerResumeToken => _miniPlayerResumeToken;
   List<String> get blacklistedVideoIds => _blacklistedVideoIds.toList();
 
@@ -47,10 +54,7 @@ class MoodTubeState extends ChangeNotifier {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setStringList(
           'blacklistedVideoIds', _blacklistedVideoIds.toList());
-      // 만약 현재 재생 중인 곡이 블랙리스트에 추가되면 재생 중지
-      if (currentPlaying?.videoId == videoId) {
-        clearCurrentPlaying();
-      }
+      // Callers decide whether to skip-to-next or clear playback.
       notifyListeners();
     }
   }
@@ -120,8 +124,43 @@ class MoodTubeState extends ChangeNotifier {
     notifyListeners();
   }
 
+  void setFullPlayerActive(bool value) {
+    if (fullPlayerActive == value) return;
+    fullPlayerActive = value;
+    notifyListeners();
+  }
+
+  /// Start playback with an optional skip-queue (used when a video errors).
+  void startPlayback(VideoItem item, {List<VideoItem>? queue}) {
+    if (queue != null && queue.isNotEmpty) {
+      _playQueue = List<VideoItem>.from(queue);
+      final idx = _playQueue.indexWhere((v) => v.videoId == item.videoId);
+      _playQueueIndex = idx >= 0 ? idx : 0;
+      currentPlaying = _playQueue[_playQueueIndex];
+    } else {
+      _playQueue = [item];
+      _playQueueIndex = 0;
+      currentPlaying = item;
+    }
+    notifyListeners();
+  }
+
+  /// Advance past the current (usually blacklisted) track. Returns null if none.
+  VideoItem? advanceToNextInQueue() {
+    for (var i = _playQueueIndex + 1; i < _playQueue.length; i++) {
+      final next = _playQueue[i];
+      if (_blacklistedVideoIds.contains(next.videoId)) continue;
+      _playQueueIndex = i;
+      currentPlaying = next;
+      notifyListeners();
+      return next;
+    }
+    return null;
+  }
+
   void clearCurrentPlaying() {
     currentPlaying = null;
+    fullPlayerActive = false;
     notifyListeners();
   }
 

@@ -1,0 +1,36 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  analyze-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Analyze
+        run: flutter analyze --no-fatal-infos
+
+      - name: Test
+        run: flutter test
+
+  catalog-check:
+    runs-on: ubuntu-latest
+    # Network-bound; keep separate so analyze/test stay fast.
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify catalog video IDs
+        run: bash tools/check_catalog.sh

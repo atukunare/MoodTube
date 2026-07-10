@@ -269,9 +269,9 @@ class _HomeScreenState extends State<HomeScreen> {
       final results = await state.searchMoodAndRemember(mood);
       if (!mounted || results.isEmpty) return;
       final item = results.first;
-      state.setCurrentPlaying(item);
-      Navigator.of(context)
-          .push(MaterialPageRoute(builder: (_) => PlayerScreen(item: item)));
+      state.startPlayback(item, queue: results);
+      Navigator.of(context).push(MaterialPageRoute(
+          builder: (_) => PlayerScreen(item: item, queue: results)));
     } finally {
       if (mounted) setState(() => isDialStarting = false);
     }
@@ -596,7 +596,8 @@ class _SmartPickCardState extends State<SmartPickCard> {
         child: InkWell(
           borderRadius: BorderRadius.circular(20),
           onTap: () {
-            state.setCurrentPlaying(widget.item);
+            final queue = state.smartRecommendations;
+            state.startPlayback(widget.item, queue: queue);
             // Track click for Scapetune spotlight cards
             if (isSpotlight) {
               context.read<MoodTubeState>().trackClick(
@@ -604,8 +605,9 @@ class _SmartPickCardState extends State<SmartPickCard> {
                     widget.item.channelTitle,
                   );
             }
-            Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => PlayerScreen(item: widget.item)));
+            Navigator.of(context).push(MaterialPageRoute(
+                builder: (_) =>
+                    PlayerScreen(item: widget.item, queue: queue)));
           },
           child: Container(
             padding: const EdgeInsets.all(8),
@@ -772,7 +774,7 @@ class _ScapetuneBanner extends StatelessWidget {
       child: InkWell(
         borderRadius: BorderRadius.circular(24),
         onTap: () {
-          state.setCurrentPlaying(video);
+          state.startPlayback(video);
           Navigator.of(context).push(
             MaterialPageRoute(builder: (_) => PlayerScreen(item: video)),
           );

@@ -87,11 +87,11 @@ class _MoodDialSheetState extends State<MoodDialSheet> {
       final results = await state.searchMoodAndRemember(mood);
       if (!mounted || results.isEmpty) return;
       final item = results.first;
-      state.setCurrentPlaying(item);
+      state.startPlayback(item, queue: results);
       final navigator = Navigator.of(context);
       navigator.pop();
-      navigator
-          .push(MaterialPageRoute(builder: (_) => PlayerScreen(item: item)));
+      navigator.push(MaterialPageRoute(
+          builder: (_) => PlayerScreen(item: item, queue: results)));
     } finally {
       if (mounted) setState(() => isStarting = false);
     }

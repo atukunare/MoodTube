@@ -12,44 +12,54 @@ import 'package:moodtube/state/mood_tube_state.dart';
 import 'package:moodtube/theme/tokens.dart';
 
 class PlayerScreen extends StatefulWidget {
-  const PlayerScreen({super.key, required this.item});
+  const PlayerScreen({super.key, required this.item, this.queue});
 
   final VideoItem item;
+  /// Optional skip-queue used when the current video errors.
+  final List<VideoItem>? queue;
 
   @override
   State<PlayerScreen> createState() => _PlayerScreenState();
 }
 
 class _PlayerScreenState extends State<PlayerScreen> {
-  late final YoutubePlayerController controller;
+  late YoutubePlayerController controller;
   late final MoodTubeState _tubeState;
+  late VideoItem _item;
   var _shouldResumeMiniPlayer = true;
   bool _showYouTubeOverlay = false;
   bool _overlayDismissed = false;
+  bool _handlingError = false;
 
   @override
   void initState() {
     super.initState();
     _tubeState = context.read<MoodTubeState>();
+    _item = widget.item;
+    _tubeState.setFullPlayerActive(true);
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) _tubeState.setCurrentPlaying(widget.item);
+      if (!mounted) return;
+      _tubeState.startPlayback(_item, queue: widget.queue);
     });
-    controller = YoutubePlayerController(
-      initialVideoId: widget.item.videoId,
-      flags: const YoutubePlayerFlags(
-        autoPlay: true,
-        controlsVisibleAtStart: true,
-        enableCaption: false,
-      ),
-    );
+    controller = _buildController(_item.videoId);
     controller.addListener(_trackPlaybackIntent);
     WidgetsBinding.instance.addPostFrameCallback((_) => controller.play());
   }
 
+  YoutubePlayerController _buildController(String videoId) {
+    return YoutubePlayerController(
+      initialVideoId: videoId,
+      flags: const YoutubePlayerFlags(
+        autoPlay: true,
+      ),
+    );
+  }
+
   @override
   void dispose() {
+    _tubeState.setFullPlayerActive(false);
     if (_shouldResumeMiniPlayer) {
-      _tubeState.requestMiniPlayerResume(widget.item);
+      _tubeState.requestMiniPlayerResume(_item);
     }
     controller.removeListener(_trackPlaybackIntent);
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
@@ -61,11 +71,12 @@ class _PlayerScreenState extends State<PlayerScreen> {
   Widget build(BuildContext context) {
     final text = AppText.of(context);
     final state = context.watch<MoodTubeState>();
-    final saved = state.isSaved(widget.item.videoId);
+    final saved = state.isSaved(_item.videoId);
     final isLandscape =
         MediaQuery.orientationOf(context) == Orientation.landscape;
     final player = YoutubePlayer(
       controller: controller,
+      key: ValueKey(_item.videoId),
     );
     _syncSystemUi(isLandscape);
     if (isLandscape) {
@@ -97,28 +108,28 @@ class _PlayerScreenState extends State<PlayerScreen> {
                   ),
                 ),
                 const SizedBox(height: 20),
-                Text(widget.item.title,
+                Text(_item.title,
                     style: TextStyle(
                         fontSize: 22,
                         height: 1.18,
                         fontWeight: FontWeight.w800,
                         color: DesignTokens.ink)),
                 const SizedBox(height: 8),
-                Text(widget.item.channelTitle,
+                Text(_item.channelTitle,
                     style: TextStyle(
                         fontSize: 14,
                         color: DesignTokens.sage,
                         fontWeight: FontWeight.w700)),
                 const SizedBox(height: 22),
                 OutlinedButton.icon(
-                  onPressed: () => state.toggleSaved(widget.item),
+                  onPressed: () => state.toggleSaved(_item),
                   icon: Icon(
                       saved ? Icons.bookmark : Icons.bookmark_add_outlined),
                   label: Text(saved ? text.saved : text.savePlaylist),
                 ),
                 OutlinedButton.icon(
                   onPressed: () {
-                    final mood = matchMood(widget.item.tags.join(' '));
+                    final mood = matchMood(_item.tags.join(' '));
                     Navigator.of(context).push(MaterialPageRoute(
                         builder: (_) => ResultsScreen(mood: mood)));
                   },
@@ -128,7 +139,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
                 FilledButton.icon(
                   onPressed: () async {
                     try {
-                      await launchUrl(Uri.parse(widget.item.youtubeUrl),
+                      await launchUrl(Uri.parse(_item.youtubeUrl),
                           mode: LaunchMode.inAppBrowserView);
                     } catch (_) {
                       // Keep playback usable even if the in-app browser is absent.
@@ -140,7 +151,6 @@ class _PlayerScreenState extends State<PlayerScreen> {
               ],
             ),
           ),
-          // v0.1.3: YouTube overlay at 30s
           if (_showYouTubeOverlay)
             Positioned(
               left: 0,
@@ -204,7 +214,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
                           onPressed: () {
                             setState(() => _showYouTubeOverlay = false);
                             launchUrl(
-                              Uri.parse(widget.item.youtubeUrl),
+                              Uri.parse(_item.youtubeUrl),
                               mode: LaunchMode.externalApplication,
                             );
                           },
@@ -239,12 +249,26 @@ class _PlayerScreenState extends State<PlayerScreen> {
   void _trackPlaybackIntent() {
     final value = controller.value;
     if (value.hasError) {
+      if (_handlingError) return;
+      _handlingError = true;
       controller.removeListener(_trackPlaybackIntent);
-      final videoId = widget.item.videoId;
+      final videoId = _item.videoId;
       _tubeState.blacklistVideo(videoId);
 
-      final errMsg = AppText.of(context).playErrorRestricted;
+      final next = _tubeState.advanceToNextInQueue();
+      if (next != null) {
+        final errMsg = AppText.of(context).playErrorGeneric;
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(errMsg)),
+          );
+          _swapToVideo(next);
+        });
+        return;
+      }
 
+      final errMsg = AppText.of(context).playErrorRestricted;
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -266,13 +290,32 @@ class _PlayerScreenState extends State<PlayerScreen> {
         value.playerState == PlayerState.buffering) {
       _shouldResumeMiniPlayer = true;
     }
-    // v0.1.3: Show YouTube overlay after 30s of playback
-    if (value.isPlaying && value.position.inSeconds >= 30 &&
-        !_overlayDismissed && !_showYouTubeOverlay) {
+    if (value.isPlaying &&
+        value.position.inSeconds >= 30 &&
+        !_overlayDismissed &&
+        !_showYouTubeOverlay) {
       setState(() => _showYouTubeOverlay = true);
       Future.delayed(const Duration(seconds: 5), () {
         if (mounted) setState(() => _showYouTubeOverlay = false);
       });
     }
+  }
+
+  void _swapToVideo(VideoItem next) {
+    controller.removeListener(_trackPlaybackIntent);
+    final old = controller;
+    setState(() {
+      _item = next;
+      _showYouTubeOverlay = false;
+      _overlayDismissed = false;
+      _handlingError = false;
+      _shouldResumeMiniPlayer = true;
+      controller = _buildController(next.videoId);
+    });
+    controller.addListener(_trackPlaybackIntent);
+    Future.microtask(() => old.dispose());
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) controller.play();
+    });
   }
 }

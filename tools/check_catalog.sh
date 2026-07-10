@@ -7,7 +7,8 @@ set -e
 cd "$(dirname "$0")/.."
 
 CATALOG="lib/data/mock_catalog.dart"
-IDS=$(grep -oE "mockVideo\(\s*'[A-Za-z0-9_-]{11}'" "$CATALOG" | grep -oE "'[A-Za-z0-9_-]{11}'" | tr -d "'" | sort -u)
+# Multiline-safe: mockVideo( may wrap before the quoted 11-char ID.
+IDS=$(perl -0777 -ne 'while (/mockVideo\(\s*\n?\s*'\''([A-Za-z0-9_-]{11})'\''/g) { print "$1\n" }' "$CATALOG" | sort -u)
 
 BAD=0
 for id in $IDS; do

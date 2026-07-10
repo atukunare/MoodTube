@@ -79,8 +79,8 @@ class AppText {
   String get english => _pick('영어', 'English', '英语');
   String get korean => _pick('한국어', 'Korean', '韩语');
   String get chinese => _pick('중국어', 'Chinese', '中文');
-  String get appVersion =>
-      _pick('앱 버전 0.1.2', 'App version 0.1.2', '应用版本 0.1.2');
+  String appVersionLabel(String version) =>
+      _pick('앱 버전 $version', 'App version $version', '应用版本 $version');
   String get unknownUploadDate =>
       _pick('업로드일 정보 없음', 'Upload date unavailable', '无上传日期信息');
   String get all => _pick('전체', 'All', '全部');
@@ -139,7 +139,7 @@ class AppText {
   String get resetPlayErrorHelp => _pick(
         '재생 오류로 인해 자동 차단된 영상 목록을 모두 비우고 다시 추천에 포함시킵니다.',
         'Clear all automatically blocked videos and restore them to recommendations.',
-        '清除所有自动屏蔽의 视频并重新将其包含在推荐中。',
+        '清除所有自动屏蔽的视频并重新将其包含在推荐中。',
       );
   String get blockedVideosCount => _pick('차단된 영상 수', 'Blocked videos', '已屏蔽视频数');
   String get resetButtonText => _pick('초기화', 'Reset', '重置');

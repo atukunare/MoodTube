@@ -4,3 +4,5 @@ import 'package:flutter/widgets.dart';
 Future<void> initAds() async {}
 
 Widget smartPickAd() => const SizedBox.shrink();
+
+Widget resultsListAd() => const SizedBox.shrink();

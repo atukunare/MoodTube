@@ -1,4 +1,4 @@
-// Android/iOS ad implementation (google_mobile_ads).
+// Android/iOS ad implementation (google_mobile_ads + UMP consent).
 import 'package:flutter/foundation.dart' show kReleaseMode;
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
@@ -11,11 +11,54 @@ const String _testNativeAdUnitId = 'ca-app-pub-3940256099942544/2247696110';
 const String _nativeAdUnitId =
     kReleaseMode ? _realNativeAdUnitId : _testNativeAdUnitId;
 
+bool _adsInitialized = false;
+
 Future<void> initAds() async {
-  await MobileAds.instance.initialize();
+  await _requestConsentThenInit();
+}
+
+Future<void> _ensureMobileAdsInitialized() async {
+  if (_adsInitialized) return;
+  try {
+    await MobileAds.instance.initialize();
+    _adsInitialized = true;
+  } catch (_) {}
+}
+
+/// GDPR/UMP consent form, then Mobile Ads init. Failures are swallowed so ads
+/// never block app launch.
+Future<void> _requestConsentThenInit() async {
+  try {
+    final completerDone = <bool>[false];
+    ConsentInformation.instance.requestConsentInfoUpdate(
+      ConsentRequestParameters(),
+      () async {
+        try {
+          if (await ConsentInformation.instance.isConsentFormAvailable()) {
+            await ConsentForm.loadAndShowConsentFormIfRequired((_) {});
+          }
+        } catch (_) {}
+        await _ensureMobileAdsInitialized();
+        completerDone[0] = true;
+      },
+      (FormError error) async {
+        await _ensureMobileAdsInitialized();
+        completerDone[0] = true;
+      },
+    );
+    // Bound wait so launch is never blocked by a hung consent callback.
+    for (var i = 0; i < 40 && !completerDone[0]; i++) {
+      await Future<void>.delayed(const Duration(milliseconds: 100));
+    }
+    await _ensureMobileAdsInitialized();
+  } catch (_) {
+    await _ensureMobileAdsInitialized();
+  }
 }
 
 Widget smartPickAd() => const _NativeAdSlot();
+
+Widget resultsListAd() => const _NativeAdSlot();
 
 class _NativeAdSlot extends StatefulWidget {
   const _NativeAdSlot();

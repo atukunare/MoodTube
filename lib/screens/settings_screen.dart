@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 
 import 'package:moodtube/l10n/app_text.dart';
@@ -15,6 +16,25 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
+  String _versionLabel = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadVersion();
+  }
+
+  Future<void> _loadVersion() async {
+    try {
+      final info = await PackageInfo.fromPlatform();
+      if (!mounted) return;
+      setState(() => _versionLabel = info.version);
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _versionLabel = '0.3.3');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final text = AppText.of(context);
@@ -136,9 +156,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
             body: text.policyBody,
           ),
           const SizedBox(height: 4),
-          Text(text.appVersion,
-              style: TextStyle(
-                  color: DesignTokens.sage, fontWeight: FontWeight.w700)),
+          if (_versionLabel.isNotEmpty)
+            Text(text.appVersionLabel(_versionLabel),
+                style: TextStyle(
+                    color: DesignTokens.sage, fontWeight: FontWeight.w700)),
         ],
       ),
     );

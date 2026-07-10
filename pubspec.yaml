@@ -1,7 +1,7 @@
 name: moodtube
 description: "MoodTube - Find long YouTube music playlists by mood"
 publish_to: "none"
-version: 0.3.3+5
+version: 0.3.4+6
 license: MIT
 
 environment:
@@ -21,6 +21,7 @@ dependencies:
   google_mobile_ads: ^5.2.0
   cached_network_image: ^3.4.1
   connectivity_plus: ^6.1.4
+  package_info_plus: ^8.1.2
 
 dev_dependencies:
   flutter_test:

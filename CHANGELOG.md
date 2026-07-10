@@ -4,6 +4,20 @@ MoodTube 프로젝트의 최초 알파 빌드부터 구글 플레이스토어 �
 
 ---
 
+## [0.3.4+6] - 2026-07-10 (안정성 · 콘텐츠 · 수익화 스프린트)
+### 추가 및 변경 사항
+*   **이중 YouTube 컨트롤러 차단**: 풀스크린 `PlayerScreen`이 열려 있는 동안 `fullPlayerActive`로 미니플레이어 컨트롤러 생성을 막아 오디오 겹침을 제거했습니다.
+*   **재생 오류 시 다음 곡 스킵**: 검색/무드 결과 큐를 유지하고, 임베드 오류 시 블랙리스트 후 다음 트랙으로 자동 전환합니다.
+*   **설정 버전 표기**: `package_info_plus`로 실제 앱 버전을 표시합니다(기존 0.1.2 하드코딩 제거).
+*   **중국어 오타 수정**: 재생 오류 초기화 도움말의 한국어 조사 혼입을 수정했습니다.
+*   **카탈로그 고유 ID 확장**: Lofi Girl / Good Life / rain 등 검증된 신규 ID 6개를 추가했습니다.
+*   **CI**: GitHub Actions에서 `flutter analyze` · `flutter test` · `check_catalog.sh`를 실행합니다.
+*   **UMP 동의**: AdMob 초기화 전 User Messaging Platform 동의 폼을 요청합니다.
+*   **Results 네이티브 광고**: 검색 결과 4번째 항목 뒤에 네이티브 슬롯을 추가했습니다.
+*   **단위 테스트**: 재생 큐 스킵, full-player 플래그, API 예산, 카탈로그 고유 ID 테스트를 추가했습니다.
+
+---
+
 ## [0.3.3+5] - 2026-07-05 (프론트엔드 품질 대개편 — 죽은 카탈로그 청산 + 모션 도입)
 ### 추가 및 변경 사항
 *   **죽은 영상 ID 전면 청산 (콘텐츠 신뢰 회복)**: 카탈로그의 43개 영상 ID를 YouTube oEmbed로 전수 검증한 결과 20개가 삭제/비공개 상태(회색 썸네일·재생 불가의 원인)였습니다. 전부 실존 검증된 영상(Lofi Girl 라디오, HALIDONMUSIC Best of Mozart, Chillhop Radio, The Good Life Radio 등)으로 교체하고 실제 제목/채널명으로 표기를 정정했습니다. 정기 검증용 `tools/check_catalog.sh`(oEmbed 200 + 썸네일 존재 검사)를 신설했습니다.

@@ -107,6 +107,105 @@ void main() {
     expect(state.miniPlayerResumeToken, 1);
   });
 
+  test('play queue advances past blacklisted tracks', () {
+    const a = VideoItem(
+      videoId: 'a',
+      title: 'A',
+      channelTitle: 'MoodTube',
+      durationSeconds: 3600,
+      viewCount: 1000,
+      publishedText: '1년 전',
+      tags: ['공부'],
+      score: 90,
+    );
+    const b = VideoItem(
+      videoId: 'b',
+      title: 'B',
+      channelTitle: 'MoodTube',
+      durationSeconds: 3600,
+      viewCount: 1000,
+      publishedText: '1년 전',
+      tags: ['카페'],
+      score: 80,
+    );
+    const c = VideoItem(
+      videoId: 'c',
+      title: 'C',
+      channelTitle: 'MoodTube',
+      durationSeconds: 3600,
+      viewCount: 1000,
+      publishedText: '1년 전',
+      tags: ['밤'],
+      score: 70,
+    );
+    final state = MoodTubeState();
+    state.startPlayback(a, queue: const [a, b, c]);
+    expect(state.currentPlaying?.videoId, 'a');
+    expect(state.fullPlayerActive, isFalse);
+
+    state.fullPlayerActive = true;
+    expect(state.fullPlayerActive, isTrue);
+
+    // Simulate blacklist without clearing current (caller advances).
+    state.blacklistVideo('a');
+    final next = state.advanceToNextInQueue();
+    expect(next?.videoId, 'b');
+    expect(state.currentPlaying?.videoId, 'b');
+
+    state.blacklistVideo('b');
+    final last = state.advanceToNextInQueue();
+    expect(last?.videoId, 'c');
+
+    state.blacklistVideo('c');
+    expect(state.advanceToNextInQueue(), isNull);
+  });
+
+  test('full player flag clears with clearCurrentPlaying', () {
+    const item = VideoItem(
+      videoId: 'x',
+      title: 'X',
+      channelTitle: 'MoodTube',
+      durationSeconds: 3600,
+      viewCount: 1000,
+      publishedText: '1년 전',
+      tags: ['공부'],
+      score: 90,
+    );
+    final state = MoodTubeState();
+    state.startPlayback(item);
+    state.setFullPlayerActive(true);
+    expect(state.fullPlayerActive, isTrue);
+    state.clearCurrentPlaying();
+    expect(state.currentPlaying, isNull);
+    expect(state.fullPlayerActive, isFalse);
+  });
+
+  test('api daily budget gates and rolls back on empty results path', () async {
+    SharedPreferences.setMockInitialValues({});
+    final state = MoodTubeState();
+    await state.load();
+    // Force API mode with empty key → offline path, no budget spend.
+    await state.setApiKey('');
+    await state.setApiMode(true);
+    final before = state.apiSearchesToday;
+    final results = await state.searchTextAndRemember('study focus');
+    expect(results, isNotEmpty);
+    expect(state.apiSearchesToday, before);
+  });
+
+  test('catalog unique video ids cover expanded set', () {
+    final ids = <String>{};
+    for (final list in mockCatalog.values) {
+      for (final item in list) {
+        ids.add(item.videoId);
+      }
+    }
+    expect(ids.length, greaterThanOrEqualTo(40));
+    expect(ids.contains('4xDzrJKXOOY'), isTrue);
+    expect(ids.contains('hHW1oY26kxQ'), isTrue);
+    expect(ids.contains('q76bMs-NwRk'), isTrue);
+  });
+
   testWidgets('compact video row keeps thumbnail fallback inside mobile layout',
       (WidgetTester tester) async {
     const item = VideoItem(

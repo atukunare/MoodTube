@@ -154,8 +154,11 @@ class CompactVideoRow extends StatelessWidget {
         color: Colors.transparent,
         child: InkWell(
           borderRadius: BorderRadius.circular(20),
-          onTap: () => Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => PlayerScreen(item: item))),
+          onTap: () {
+            context.read<MoodTubeState>().startPlayback(item);
+            Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => PlayerScreen(item: item)));
+          },
           child: Container(
             padding: const EdgeInsets.all(10),
             decoration: auroraPanelDecoration(

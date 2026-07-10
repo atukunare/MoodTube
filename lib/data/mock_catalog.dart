@@ -6,11 +6,13 @@ import 'package:moodtube/services/search_service.dart';
 
 // 카탈로그의 모든 videoId는 실존 영상이어야 한다(죽은 ID는 회색 썸네일과
 // 재생 오류를 만든다). 전체 검증: tools/check_catalog.sh (oEmbed 200 + 썸네일).
-// 마지막 전수 검증: 2026-07-05.
+// 마지막 전수 검증: 2026-07-05. 고유 ID 확장: 2026-07-10.
 final mockCatalog = <String, List<VideoItem>>{
   'study_work': [
     mockVideo('TURbeWK2wwg', '4 A.M Study Session [lofi hip hop]',
         'Lofi Girl', 7200, 18400000, '1년 전', ['공부', '집중']),
+    mockVideo('hHW1oY26kxQ', 'lofi hip hop radio - beats to relax/study to',
+        'Lofi Girl', 28800, 500000000, '최근', ['공부', '로파이', '집중']),
     mockVideo('lTRiuFIWV54', 'Deep Focus Music for Coding and Work - 3 Hours',
         'Focus Flow', 10800, 2450000, '8개월 전', ['작업', '코딩']),
     mockVideo('Dx5qFachd3A', 'study music no lyrics playlist 1 hour',
@@ -119,6 +121,14 @@ final mockCatalog = <String, List<VideoItem>>{
         6100000,
         '최근',
         ['운동', 'EDM']),
+    mockVideo(
+        '9UMxZofMNbA',
+        'Chillout Lounge - Calm & Relaxing Background Music',
+        'The Good Life Radio x Sensual Musique',
+        14400,
+        8900000,
+        '최근',
+        ['운동', '하우스', '신나는']),
     mockVideo('gCYcHz2k5x0', 'Martin Garrix - Animals (Official Video)',
         'STMPD RCRDS', 305, 98000000, '1년 전', ['헬스', 'EDM']),
     mockVideo(
@@ -139,6 +149,8 @@ final mockCatalog = <String, List<VideoItem>>{
         6100000,
         '최근',
         ['드라이브']),
+    mockVideo('4xDzrJKXOOY', 'synthwave radio - beats to chill/game to',
+        'Lofi Girl', 28800, 85000000, '최근', ['드라이브', '신스웨이브', '여행']),
     mockVideo('MV_3Dpw-BRY', 'synthwave road trip mix 2 hours', 'Night Highway',
         7200, 3500000, '2년 전', ['여행']),
     mockVideo(
@@ -270,6 +282,8 @@ final mockCatalog = <String, List<VideoItem>>{
   'chill_lofi': [
     mockVideo('TURbeWK2wwg', '4 A.M Study Session [lofi hip hop]',
         'Lofi Girl', 7200, 18400000, '1년 전', ['로파이', '칠']),
+    mockVideo('n61ULEU7CO0', 'Best of lofi hip hop 2021 - beats to relax/study to',
+        'Lofi Girl', 7200, 45000000, '3년 전', ['로파이', '칠', '집중']),
     mockVideo('5qap5aO4i9A', 'lofi beats mix for soft focus', 'Quiet Hours',
         7200, 12800000, '2년 전', ['로파이']),
     mockVideo('kgx4WGK0oNU', 'chillhop rainy room mix', 'Window Lofi', 5400,
@@ -493,6 +507,14 @@ final mockCatalog = <String, List<VideoItem>>{
   'nature_sound': [
     mockVideo('DSGyEsJ17cI', 'forest rain sounds playlist for sleep',
         'Rain Notes', 7200, 3200000, '1년 전', ['자연', '비']),
+    mockVideo(
+        'q76bMs-NwRk',
+        '3 Hours of Gentle Night Rain, Rain Sounds for Sleeping',
+        'The Relaxed Guy',
+        10800,
+        4200000,
+        '최근',
+        ['비', '자연', '수면']),
     mockVideo('1ZYbU82GVz4', 'ocean waves and soft piano 3 hours', 'Rest Keys',
         10800, 7600000, '2년 전', ['자연']),
     mockVideo('bP9gMpl1gyQ', 'nature ambient music mix for deep rest',
