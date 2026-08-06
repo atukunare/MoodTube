@@ -4,6 +4,16 @@ MoodTube 프로젝트의 최초 알파 빌드부터 구글 플레이스토어 �
 
 ---
 
+## [0.3.5+7] - 2026-08-06 (안정성 폴리시)
+### 추가 및 변경 사항
+*   **보관함·Scapetune 스킵 큐**: 보관함 목록과 홈 Scapetune 배너 재생 시에도 오류 나면 다음 트랙으로 이어집니다.
+*   **API 업로드일 로케일 중립화**: YouTube API 경로의 날짜를 `rel:y:`/`rel:m:` 토큰으로 저장하고 `AppText.published`가 ko/en/zh로 포맷합니다.
+*   **Explore API 쿼터 절약**: 스포트라이트용 두 번째 `search.list`(+ 채널 resolve)를 제거하고 오프라인 Scapetune 카탈로그를 사용합니다. 탐색 검색당 API 호출이 절반 이하로 줄었습니다.
+*   **설정 버전 폴백**: PackageInfo 실패 시 표시값을 0.3.5로 맞춤.
+*   **문서**: DEVELOPMENT/ADS_GUIDE를 출시 후 현실(UMP·Results 광고)에 맞게 갱신.
+
+---
+
 ## [0.3.4+6] - 2026-07-10 (안정성 · 콘텐츠 · 수익화 스프린트)
 ### 추가 및 변경 사항
 *   **이중 YouTube 컨트롤러 차단**: 풀스크린 `PlayerScreen`이 열려 있는 동안 `fullPlayerActive`로 미니플레이어 컨트롤러 생성을 막아 오디오 겹침을 제거했습니다.

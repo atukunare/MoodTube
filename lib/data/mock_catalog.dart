@@ -691,6 +691,17 @@ VideoItem spotlightVideoForQuery(String query, MoodPreset mood,
   );
 }
 
+/// Ordered Scapetune spotlight list for skip-queue playback (blacklist-aware).
+List<VideoItem> scapetuneSpotlightQueue(
+    {bool Function(String)? isBlacklisted}) {
+  if (isBlacklisted == null) {
+    return List<VideoItem>.unmodifiable(_scapetuneSpotlights);
+  }
+  return _scapetuneSpotlights
+      .where((item) => !isBlacklisted(item.videoId))
+      .toList(growable: false);
+}
+
 // Real videos from the @my_scapetune channel (channel id UCCZge1CJ4Z-gcfEVRIAihzA),
 // fetched 2026-06-07. Refresh periodically with tools/fetch_scapetune.sh.
 final _scapetuneSpotlights = [

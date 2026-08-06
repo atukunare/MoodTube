@@ -1,8 +1,8 @@
 # MoodTube 광고(수익화) 초보 가이드
 
 > 목표: 앱에 광고를 넣어 수익을 만들되, 음악 감상 경험을 해치지 않게.
-> 현재 MoodTube는 **Google AdMob 연동이 완료**되어 있고, 홈 "스마트 픽" 리스트 안에 광고 슬롯이 들어가 있습니다.
-> 출시 전 남은 핵심은 **Play Console Data Safety에 광고/광고 ID 사용을 정확히 반영**하는 것입니다.
+> MoodTube는 **Google AdMob + UMP 동의**가 연동되어 있습니다.
+> 홈 스마트 픽·검색 결과 네이티브 슬롯이 동작 중이며, Play Console **Data Safety**에 광고/AD_ID를 정확히 반영해야 합니다.
 
 ---
 

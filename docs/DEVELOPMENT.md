@@ -62,7 +62,8 @@ Scope: search and edit within this project folder unless an external path is exp
 - API 모드: YouTube Data API + 긴 플레이리스트 의도. 실패 시 `mockCatalog` 폴백.
 - 스마트 픽: 조회수 높은 긴 플레이리스트 우선 + Scapetune 스포트라이트 1개.
 - Scapetune: `https://www.youtube.com/@my_scapetune`
-- 일일 API 상한: `kDailyApiSearchLimit` = 12 (기기당)
+- 일일 API 상한: `kDailyApiSearchLimit` = 12 (기기당). Explore 검색은 **검색 1회**만 API를 쓰고 스포트라이트는 오프라인 카탈로그를 사용합니다.
+- 재생 오류 시: 큐가 있으면 블랙리스트 후 다음 트랙 자동 스킵(홈/탐색/보관함/Scapetune 배너).
 
 ## YouTube API 키
 
@@ -75,7 +76,8 @@ flutter build appbundle --release --dart-define-from-file=dart_defines.json
 
 ## 광고 (AdMob)
 
-- `google_mobile_ads`, 네이티브 광고 슬롯 `ads.smartPickAd()`
+- `google_mobile_ads` + **UMP(GDPR) 동의** (`lib/ads/ads_real.dart`)
+- 네이티브 슬롯: 홈 스마트 픽 3번째 뒤(`smartPickAd`), 검색 결과 4번째 뒤(`resultsListAd`)
 - 앱 ID: `ca-app-pub-9993388177095923~4694181215` (AndroidManifest)
 - 상세: [ADS_GUIDE.md](ADS_GUIDE.md)
 

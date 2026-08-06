@@ -8,8 +8,6 @@ import 'package:moodtube/data/mock_catalog.dart';
 import 'package:moodtube/models/mood_preset.dart';
 import 'package:moodtube/models/video_item.dart';
 
-const scapetuneChannelHandle = '@my_scapetune';
-
 // Max YouTube Data API searches per device per day. Beyond this the app uses
 // only the internal catalog, so the shared API quota stays under control.
 const kDailyApiSearchLimit = 12;
@@ -72,24 +70,12 @@ class YouTubeSearchService {
           sourceQuery: query,
         );
         if (includeSpotlight) {
-          final scapetuneChannelId =
-              await _resolveChannelId(apiKey, scapetuneChannelHandle);
-          final spotlight = await _searchApiQuery(
-            query: '$query playlist music',
-            apiKey: apiKey,
-            mood: mood,
-            sourceQuery: query,
-            preferredChannel: spotlightChannel,
-            channelId: scapetuneChannelId,
-            maxResults: 5,
-          );
-          final fallbackSpotlight = spotlight.isEmpty
-              ? [
-                  spotlightVideoForQuery(query, mood,
-                      spotlightChannel: spotlightChannel)
-                ]
-              : <VideoItem>[];
-          return _mergeResults([...results, ...spotlight, ...fallbackSpotlight])
+          // Use the offline Scapetune catalog for the spotlight slot so each
+          // Explore search spends only one search.list unit (not two +
+          // channels.list). Keeps the shared YouTube quota under control.
+          final spotlight = spotlightVideoForQuery(query, mood,
+              spotlightChannel: spotlightChannel);
+          return _mergeResults([...results, spotlight])
             ..sort((a, b) => b.score.compareTo(a.score));
         }
         return results;
@@ -177,29 +163,12 @@ class YouTubeSearchService {
     }
   }
 
-  Future<String?> _resolveChannelId(String apiKey, String handle) async {
-    final normalizedHandle = handle.startsWith('@') ? handle : '@$handle';
-    final uri = Uri.https('www.googleapis.com', '/youtube/v3/channels', {
-      'part': 'id',
-      'forHandle': normalizedHandle,
-      'key': apiKey,
-    });
-    final response = await _retryGet(uri);
-    if (response.statusCode != 200) return null;
-    final body = jsonDecode(response.body) as Map<String, dynamic>;
-    final items =
-        List<Map<String, dynamic>>.from(body['items'] as List? ?? const []);
-    if (items.isEmpty) return null;
-    return items.first['id'] as String?;
-  }
-
   Future<List<VideoItem>> _searchApiQuery({
     required String query,
     required String apiKey,
     required MoodPreset mood,
     required String sourceQuery,
     String? preferredChannel,
-    String? channelId,
     int maxResults = 15,
   }) async {
     final params = <String, String>{
@@ -209,7 +178,6 @@ class YouTubeSearchService {
       'videoEmbeddable': 'true',
       'maxResults': '$maxResults',
       'key': apiKey,
-      if (channelId != null && channelId.isNotEmpty) 'channelId': channelId,
     };
     final searchUri =
         Uri.https('www.googleapis.com', '/youtube/v3/search', params);
@@ -306,12 +274,15 @@ class YouTubeSearchService {
     return hours * 3600 + minutes * 60 + seconds;
   }
 
+  /// Locale-neutral relative labels. [AppText.published] formats these for
+  /// ko/en/zh. Catalog entries still use Korean tokens; both are supported.
   String _publishedLabel(String publishedAt) {
     final date = DateTime.tryParse(publishedAt);
-    if (date == null) return '업로드일 정보 없음';
-    final years = max(0, DateTime.now().difference(date).inDays ~/ 365);
-    if (years > 0) return '$years년 전';
-    final months = max(1, DateTime.now().difference(date).inDays ~/ 30);
-    return '$months개월 전';
+    if (date == null) return 'rel:unknown';
+    final days = DateTime.now().difference(date).inDays;
+    final years = max(0, days ~/ 365);
+    if (years > 0) return 'rel:y:$years';
+    final months = max(1, days ~/ 30);
+    return 'rel:m:$months';
   }
 }

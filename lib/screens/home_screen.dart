@@ -769,14 +769,19 @@ class _ScapetuneBanner extends StatelessWidget {
     final state = context.watch<MoodTubeState>();
     final video = spotlightVideoForQuery('', moodPresets.first,
         isBlacklisted: state.isBlacklisted);
+    final queue =
+        scapetuneSpotlightQueue(isBlacklisted: state.isBlacklisted);
     return Material(
       color: Colors.transparent,
       child: InkWell(
         borderRadius: BorderRadius.circular(24),
         onTap: () {
-          state.startPlayback(video);
+          final playQueue = queue.isNotEmpty ? queue : [video];
+          state.startPlayback(video, queue: playQueue);
           Navigator.of(context).push(
-            MaterialPageRoute(builder: (_) => PlayerScreen(item: video)),
+            MaterialPageRoute(
+                builder: (_) =>
+                    PlayerScreen(item: video, queue: playQueue)),
           );
         },
         child: Container(

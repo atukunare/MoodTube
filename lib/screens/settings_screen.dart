@@ -31,7 +31,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       setState(() => _versionLabel = info.version);
     } catch (_) {
       if (!mounted) return;
-      setState(() => _versionLabel = '0.3.3');
+      setState(() => _versionLabel = '0.3.5');
     }
   }
 

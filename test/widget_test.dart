@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:moodtube/app.dart';
 import 'package:moodtube/data/mock_catalog.dart';
+import 'package:moodtube/l10n/app_text.dart';
 import 'package:moodtube/models/mood_preset.dart';
 import 'package:moodtube/models/video_item.dart';
 import 'package:moodtube/screens/library_screen.dart';
@@ -204,6 +205,27 @@ void main() {
     expect(ids.contains('4xDzrJKXOOY'), isTrue);
     expect(ids.contains('hHW1oY26kxQ'), isTrue);
     expect(ids.contains('q76bMs-NwRk'), isTrue);
+  });
+
+  test('AppText.published formats locale-neutral API date tokens', () {
+    final en = AppText('en');
+    final ko = AppText('ko');
+    final zh = AppText('zh');
+    expect(en.published('rel:y:2'), '2 years ago');
+    expect(ko.published('rel:y:2'), '2년 전');
+    expect(zh.published('rel:y:2'), '2年前');
+    expect(en.published('rel:m:3'), '3 months ago');
+    expect(ko.published('rel:m:1'), '1개월 전');
+    expect(en.published('rel:unknown'), 'No upload date');
+    // Legacy catalog Korean tokens still work.
+    expect(en.published('1년 전'), '1 year ago');
+  });
+
+  test('scapetune spotlight queue skips blacklisted ids', () {
+    final queue = scapetuneSpotlightQueue(
+        isBlacklisted: (id) => id == 'DMgcQptIbMc');
+    expect(queue, isNotEmpty);
+    expect(queue.any((v) => v.videoId == 'DMgcQptIbMc'), isFalse);
   });
 
   testWidgets('compact video row keeps thumbnail fallback inside mobile layout',

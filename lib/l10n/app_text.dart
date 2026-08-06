@@ -292,12 +292,26 @@ class AppText {
 
   String published(String value) {
     final clean = value.trim();
-    if (clean == '최근') {
+    if (clean == '최근' || clean == 'rel:recent') {
       return _pick('최근', 'Recent', '最近');
     }
-    if (clean == '업로드일 정보 없음') {
+    if (clean == '업로드일 정보 없음' || clean == 'rel:unknown') {
       return _pick('업로드일 정보 없음', 'No upload date', '无上传日期');
     }
+    // Machine-readable tokens from the YouTube API path (locale-neutral).
+    final relYear = RegExp(r'^rel:y:(\d+)$').firstMatch(clean);
+    if (relYear != null) {
+      final years = relYear.group(1)!;
+      return _pick('$years년 전',
+          '$years ${years == '1' ? 'year' : 'years'} ago', '$years年前');
+    }
+    final relMonth = RegExp(r'^rel:m:(\d+)$').firstMatch(clean);
+    if (relMonth != null) {
+      final months = relMonth.group(1)!;
+      return _pick('$months개월 전',
+          '$months ${months == '1' ? 'month' : 'months'} ago', '$months个月前');
+    }
+    // Legacy catalog Korean tokens.
     final yearMatch = RegExp(r'^(\d+)년 전$').firstMatch(clean);
     if (yearMatch != null) {
       final years = yearMatch.group(1)!;

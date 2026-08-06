@@ -130,8 +130,11 @@ class _LibraryScreenState extends State<LibraryScreen> {
               ),
             )
           else
-            ...filtered
-                .map((item) => CompactVideoRow(item: item, showDelete: true)),
+            ...filtered.map((item) => CompactVideoRow(
+                  item: item,
+                  showDelete: true,
+                  queue: filtered,
+                )),
         ],
       ),
     );
@@ -140,10 +143,14 @@ class _LibraryScreenState extends State<LibraryScreen> {
 
 class CompactVideoRow extends StatelessWidget {
   const CompactVideoRow(
-      {super.key, required this.item, this.showDelete = false});
+      {super.key,
+      required this.item,
+      this.showDelete = false,
+      this.queue});
 
   final VideoItem item;
   final bool showDelete;
+  final List<VideoItem>? queue;
 
   @override
   Widget build(BuildContext context) {
@@ -155,9 +162,13 @@ class CompactVideoRow extends StatelessWidget {
         child: InkWell(
           borderRadius: BorderRadius.circular(20),
           onTap: () {
-            context.read<MoodTubeState>().startPlayback(item);
-            Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => PlayerScreen(item: item)));
+            final playQueue = queue ?? [item];
+            context
+                .read<MoodTubeState>()
+                .startPlayback(item, queue: playQueue);
+            Navigator.of(context).push(MaterialPageRoute(
+                builder: (_) =>
+                    PlayerScreen(item: item, queue: playQueue)));
           },
           child: Container(
             padding: const EdgeInsets.all(10),
